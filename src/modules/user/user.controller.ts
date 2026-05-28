@@ -165,7 +165,7 @@ router.get(
   authentication(),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await userService.getProfileById(req.params.userId);
+      const data = await userService.getProfileById(req.params.userId as string);
       return successResponse({ res, status: 200, data });
     } catch (error) {
       return next(error);

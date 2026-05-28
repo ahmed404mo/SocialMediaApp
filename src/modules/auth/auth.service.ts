@@ -14,7 +14,7 @@ import {
   compareHash,
   generateHash,
 } from "../../common/utils/security";
-import { emailEmitter, sendEmail } from "../../common/utils/email";
+import { sendEmail } from "../../common/utils/email";
 import { emailTemplate } from "../../common/utils/email/template.email";
 import {
   NotificationService,
