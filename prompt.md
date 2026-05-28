@@ -48,6 +48,7 @@ You are an Expert Principal Frontend Engineer. Your task is to build a highly sc
 #### B. User Profile Module (`/user`)
 
 - **Get Profile:** `GET /user` (Returns User object + Groups array).
+- **Get Other User Profile:** `GET /user/:userId` (Returns User object + Groups array for specific user).
 - **Logout:** `POST /user/logout` (Body: `{ flag: "CURRENT" | "ALL" }`).
 - **Update Profile Picture:** `PATCH /user/profile-picture` (FormData: `file`).
 - **Update Cover Picture:** `PATCH /user/cover-picture` (FormData: `files` array).
@@ -106,7 +107,8 @@ Please generate the code iteratively in manageable chunks to avoid token limits.
 2. **State Management** (`src/store/useAuthStore.ts`).
 3. **Socket Provider/Hook** (`src/providers/SocketProvider.tsx`).
 4. **Authentication Pages** (Login & Register Components).
-5. **Social Feed Components** (Post list, Create Post Form with file upload).
-6. **Chat Interface** (Real-time message list, active conversations).
+5. **User Profile Pages** (Dynamic page to view own profile and other users' profiles by ID).
+6. **Social Feed Components** (Post list, Create Post Form with file upload).
+7. **Chat Interface** (Real-time message list, active conversations).
 
 Ensure all code is clean, DRY, strictly typed, and includes loading skeletons/spinners for async actions.

@@ -36,6 +36,23 @@ export class UserService {
     return { user: user.toJSON(), groups };
   }
 
+  async getProfileById(
+    userId: string,
+  ): Promise<{ user: IUser; groups: HydratedDocument<IChat>[] }> {
+    const user = await this.userRepository.findOne({ filter: { _id: userId } });
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+    await user.populate([{ path: "friends" }]);
+    const groups = await this.chatRepository.find({
+      filter: {
+        participants: { $in: [user._id] },
+        type: ChatEnum.ovm,
+      },
+    });
+    return { user: user.toJSON(), groups };
+  }
+
   async logout(
     { flag }: { flag: LogoutEnum },
     user: HydratedDocument<IUser>,
