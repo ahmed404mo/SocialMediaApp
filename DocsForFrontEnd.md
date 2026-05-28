@@ -1,110 +1,184 @@
 # 📖 Social App - Frontend Integration Guide
 
-هذا الملف مخصص لمطوري الواجهة الأمامية (Frontend) ويوضح خطة العمل الشاملة وكيفية ربط التطبيق مع الـ Backend (REST APIs, GraphQL, Socket.io).
+This document is intended for Frontend Developers. It outlines the overall execution plan and provides a detailed guide on how to integrate the frontend with the Backend (REST APIs, GraphQL, and Socket.io).
 
 ---
 
-## 🚀 خطة العمل (Frontend Execution Plan)
+## 🚀 Execution Plan
 
-يُفضل تنفيذ الربط مع الـ Backend بالترتيب التالي لضمان سير العمل بشكل صحيح:
+To ensure a smooth integration process, it is highly recommended to implement the features in the following order:
 
-### المرحلة الأولى: المصادقة (Authentication)
+### Phase 1: Authentication
 
-1. **التسجيل وتسجيل الدخول (Register & Login):** قم بإنشاء واجهات التسجيل وتسجيل الدخول. عند نجاح تسجيل الدخول، ستحصل على `access_token` و `refresh_token`.
-2. **حفظ التوكنز:** قم بحفظ التوكنز في `localStorage` أو `Cookies`.
-3. **إعداد Axios Interceptor:**
-   - يجب إرفاق `access_token` في الـ `Headers` (مثل: `Authorization: Bearer <access_token>`) في جميع الطلبات (Requests).
-   - في حال انتهاء صلاحية `access_token` (حصولك على Error 401/403)، يجب عمل Request تلقائي لـ Refresh Token باستخدام `refresh_token` لتجديد الجلسة، ثم إعادة إرسال الطلب الأصلي.
+1. **Register & Login:** Create the UI for user registration and login. Upon successful login, you will receive an `access_token` and a `refresh_token`.
+2. **Store Tokens:** Safely store these tokens in `localStorage` or `Cookies`.
+3. **Axios Interceptor Setup:**
+   - Attach the `access_token` to the `Authorization` header (Format: `Bearer <access_token>`) for all protected requests.
+   - Implement a fallback mechanism: If a request fails with a `401/403` error (expired token), automatically call the Refresh Token endpoint using the `refresh_token`, update the stored tokens locally, and retry the original request.
 
-### المرحلة الثانية: الاتصال اللحظي (Real-Time Socket.io)
+### Phase 2: Real-Time Connection (Socket.io)
 
-1. قم بإنشاء اتصال (Connection) بـ Socket.io فور نجاح تسجيل الدخول أو عند فتح التطبيق والمستخدم مسجل دخوله.
-2. **مصادقة السوكت (Socket Auth):** يجب تمرير الـ `access_token` داخل `auth.authorization` أو `headers.authorization` أثناء الاتصال.
-3. الاستماع للأحداث (Events) مثل الرسائل الجديدة وتحديثات حالة الاتصال (Online/Offline).
+1. Initialize the Socket.io connection immediately after a successful login or when the app loads with an authenticated user.
+2. **Socket Auth:** You **MUST** pass the `access_token` inside the connection options (`auth.authorization` or `headers.authorization`).
+3. Listen for global events like connection status updates (`offline_user`, error events, etc.).
 
-### المرحلة الثالثة: المحتوى والتفاعل (Social Features)
+### Phase 3: Social Features
 
-1. استدعاء بيانات المستخدم (Profile).
-2. عرض المنشورات (Posts) باستخدام REST أو GraphQL.
-3. التفاعل مع المنشورات وإضافة التعليقات (Comments).
+1. Fetch the User Profile.
+2. Display the Posts (Feed) using the REST API or GraphQL endpoint.
+3. Implement interactions such as creating posts, deleting posts, and adding comments.
 
-### المرحلة الرابعة: المحادثات (Chat System)
+### Phase 4: Chat System
 
-1. واجهة الرسائل الفردية (One-to-One).
-2. واجهة إنشاء الجروبات (Group Chat) مع رفع صورة للجروب.
-3. استخدام REST API لجلب الرسائل القديمة (Pagination)، و Socket.io لإرسال واستقبال الرسائل الجديدة لحظياً.
-
----
-
-## 🌐 قائمة الروابط (API Endpoints Overview)
-
-**الرابط الأساسي (Base URL):** `http://localhost:3000` (أو الرابط الخاص بالإنتاج)
-
-### 1. مصادقة المستخدمين (Auth) `[POST] /auth/...`
-
-- **Register:** إنشاء حساب جديد.
-- **Login:** تسجيل الدخول والحصول على التوكنز.
-- **Refresh Token / Rotate:** تجديد الـ `access_token` عند انتهائه باستخدام الـ `refresh_token`.
-
-### 2. بيانات المستخدم (User) `[GET/POST] /user/...`
-
-- **Get Profile:** جلب بيانات الحساب (والجروبات الخاصة بالمستخدم).
-- **Logout:**
-  - جهاز واحد: `flag=CURRENT`
-  - خروج من جميع الأجهزة: `flag=ALL`
-- **Delete Account:** حذف الحساب نهائياً (يتطلب مصادقة).
-
-### 3. المنشورات والتعليقات (Posts & Comments)
-
-- **`/post` (GET, POST, DELETE, etc.):** لإنشاء وحذف وعرض المنشورات والتفاعل معها.
-- **`/:postId/comment`:** لإضافة تعليقات للمنشور (يتم تمرير ID المنشور كـ Param).
-
-### 4. المحادثات (Chat) `[GET/POST] /chat/...`
-
-- **Get OVO Chat (`GET /chat/:participantId`):** جلب محادثة فردية مع مستخدم آخر باستخدام نظام الـ Pagination (باستخدام `page` و `size` في الـ Query).
-- **Get Group Chat (`GET /chat/group/:groupId`):** جلب محادثات الجروب (مع الـ Pagination).
-- **Create Group (`POST /chat/group`):** لإنشاء جروب جديد. يتطلب `FormData` لإرسال:
-  - `participantsIds` (مصفوفة الـ IDs).
-  - `group` (اسم الجروب).
-  - `file` (صورة الجروب).
+1. Implement One-to-One (OVO) messaging interfaces.
+2. Implement Group Chat (OVM) creation interfaces (which includes uploading a group avatar).
+3. Use the REST APIs to fetch chat history (Pagination) and use Socket.io to send/receive live messages.
 
 ---
 
-## ⚡ الاتصال اللحظي (Socket.io Events)
+## 🌐 REST API Endpoints Overview
 
-**اتصال السوكت (Initialization):**
+**Base URL:** `https://backend-social-media-app-livid.vercel.app/`
+
+> **⚠️ Important:** All endpoints below (except Register and Login) require the following header:
+> `Authorization: Bearer <access_token>`
+
+### 1. Authentication
+
+- **`POST /auth/register`**
+  - **Description:** Creates a new user account.
+  - **Body (JSON):** User registration details (e.g., `userName`, `email`, `password`, `gender`, etc.).
+
+- **`POST /auth/login`**
+  - **Description:** Authenticates a user and starts a session.
+  - **Body (JSON):** `{ "email": "user@example.com", "password": "yourpassword" }`
+  - **Response:** Returns the user object along with `access_token` and `refresh_token`.
+
+- **`POST /auth/refresh`** _(verify exact route in backend router)_
+  - **Description:** Rotates/Refreshes the access token.
+  - **Headers:** Needs the `refresh_token` passed as a Bearer token.
+
+### 2. User Profile
+
+- **`GET /user/profile`**
+  - **Description:** Retrieves the current authenticated user's profile and their associated groups.
+
+- **`POST /user/logout`**
+  - **Description:** Logs the user out and revokes their active token.
+  - **Body (JSON):**
+    - `{ "flag": "CURRENT" }` to logout from the current device only.
+    - `{ "flag": "ALL" }` to logout from all active devices.
+
+- **`DELETE /user/delete`**
+  - **Description:** Permanently deletes the user account and cleans up their Cloudinary assets.
+
+### 3. Posts & Comments
+
+- **`GET /post`**
+  - **Description:** Fetches the post feed.
+  - **Query Params:** `?page=1&size=10` (Pagination is required).
+
+- **`POST /post`**
+  - **Description:** Creates a new post.
+  - **Body (FormData):** Pass `content` (string) and an optional image `file`.
+
+- **`DELETE /post/:postId`**
+  - **Description:** Deletes a specific post.
+  - **Params:** `postId` in the URL.
+
+- **`POST /:postId/comment`**
+  - **Description:** Adds a comment to a specific post.
+  - **Params:** `postId` in the URL.
+  - **Body (FormData/JSON):** Comment content and optional attachments.
+
+### 4. Chat System
+
+- **`GET /chat/:participantId`**
+  - **Description:** Fetches chat history with a specific friend (One-to-One).
+  - **Params:** `participantId` (The friend's User ID).
+  - **Query Params:** `?page=1&size=20` (Fetches the latest 20 messages).
+
+- **`GET /chat/group/:groupId`**
+  - **Description:** Fetches chat history for a specific group.
+  - **Params:** `groupId` (The Group's Object ID).
+  - **Query Params:** `?page=1&size=20`
+
+- **`POST /chat/group`**
+  - **Description:** Creates a new group chat.
+  - **Body (FormData):** This endpoint requires `multipart/form-data` because it accepts an image file.
+    - `participantsIds[]`: Array of user IDs to add to the group. _(Append to FormData multiple times for each user)_.
+    - `group`: Name of the group.
+    - `file`: The group avatar image (Optional).
+
+---
+
+## ⚡ Real-Time Socket.io Integration
+
+**Prerequisite:** Install the client library in your frontend project.
+
+```bash
+npm install socket.io-client
+```
+
+### 1. Connection Initialization
+
+You **MUST** pass the authorization token when connecting. If not, the server will reject the connection.
 
 ```javascript
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://backend-social-media-app-livid.vercel.app/", {
   auth: {
-    authorization: "Bearer YOUR_ACCESS_TOKEN", // هام جداً للمصادقة
+    authorization: `Bearer ${localStorage.getItem("access_token")}`, // Essential for auth
   },
 });
 ```
 
-**الأحداث المتاحة (Events):**
+### 2. Listening to Events (Server -> Client)
 
-- `connection` / `disconnect`: للتعرف على حالة اتصال المستخدم.
-- `offline_user`: للاستماع لخروج مستخدم من النظام (مفيد لمعرفة آخر ظهور).
-- `sayHi`: حدث للتجربة (Test).
-- _ملاحظة:_ توجد أحداث أخرى متعلقة بالدردشة يتم تسجيلها في `chatGateway` (مثل إرسال واستقبال الرسائل).
+Update your UI when the server broadcasts these events:
+
+```javascript
+// Triggered if authentication fails or token is missing
+socket.on("custom_error", (errorMessage) => {
+  console.error("Socket Error:", errorMessage);
+});
+
+// Triggered when a user disconnects/goes offline
+socket.on("offline_user", (data) => {
+  console.log("User went offline:", data.userId);
+  // Example: Update the green dot next to the user's name to gray
+});
+
+// Note: Add chat-specific events (like 'receiveMessage') based on your chat gateway logic.
+```
+
+### 3. Emitting Events (Client -> Server)
+
+Send events to the server for real-time actions:
+
+```javascript
+// Test the connection
+socket.emit("sayHi", { message: "Hello from the frontend!" });
+
+// Example of sending a message (adjust event name and payload based on your chat gateway)
+// socket.emit("sendMessage", { sendTo: "USER_ID", content: "Hello there!" });
+```
 
 ---
 
-## 📊 استعلامات GraphQL
+## 📊 GraphQL API
 
-الـ Backend يدعم الـ GraphQL للطلبات المخصصة عبر الرابط:
+For flexible and customized data fetching, a GraphQL endpoint is available.
 
-- **الرابط:** `[POST] /graphql`
-- **الـ Headers:** `Authorization: Bearer <access_token>`
-- يوفر مرونة عالية لجلب بيانات المستخدمين أو المنشورات بحسب الـ Schema المُعرفة.
+- **URL:** `[POST] /graphql`
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Usage:** Send your standard GraphQL queries and mutations in the request body.
 
 ---
 
-## 🛠️ ملاحظات هامة للـ Frontend
+## 🛠️ Important Notes for Frontend
 
-1. **رفع الصور:** عند إنشاء جروب أو نشر منشور بصورة، يجب إرسال البيانات باستخدام `FormData` وليس `JSON` لكي يتم رفع الصور بنجاح عبر `Multer` لـ `Cloudinary`.
-2. **الـ Pagination:** في صفحات الـ Feed و الـ Chat، اعتمد دائمًا على معاملات `page` و `size` لتقليل الحمل وجلب البيانات دفعات.
-3. **معالجة الأخطاء (Error Handling):** جميع رسائل الخطأ من الـ Backend تعود في شكل Object يحتوي على `message` و `statusCode`. يجب عرض الـ `message` للمستخدم.
+1. **File Uploads (FormData):** Whenever an endpoint expects a `file` (like creating a post with an image, or creating a group chat), you must send the request body as `FormData` (not JSON). The `Content-Type` header should be automatically set to `multipart/form-data` by Axios when passing a `FormData` object.
+2. **Pagination:** For feeds and chat histories, always utilize the `page` and `size` query parameters to prevent fetching massive amounts of data at once. This improves app performance.
+3. **Error Handling:** Backend errors return a structured JSON response containing `message` and `statusCode`. Always read `error.response.data.message` in your Axios `catch` block to display user-friendly toast notifications.
