@@ -42,7 +42,7 @@ router.get(
         },
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 );
@@ -68,7 +68,7 @@ router.post(
         },
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 );
@@ -80,7 +80,7 @@ router.patch(
   async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<Response> => {
     const data = await postService.reactPost(
       req.params as ReactPostParamsDto,

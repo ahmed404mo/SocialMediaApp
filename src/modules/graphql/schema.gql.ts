@@ -2,8 +2,6 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { userGQlSchema } from "../user";
 import { postGQLSchema } from "../post";
 
-const user: any[] = [{ username: "ahmed", email: "mo@gmail.com" }];
-
 const query = new GraphQLObjectType({
   name: "RootSchemaQuery",
   description: "optional text t enhance understand api",
@@ -16,9 +14,9 @@ const query = new GraphQLObjectType({
 const mutation = new GraphQLObjectType({
   name: "RootSchemaMutation",
   description: "optional text t enhance understand api",
-  fields: { 
-    ...userGQlSchema.registerMutation(), 
-    ...postGQLSchema.registerMutation(), 
+  fields: {
+    ...userGQlSchema.registerMutation(),
+    ...postGQLSchema.registerMutation(),
   },
 });
 export const schema = new GraphQLSchema({ query, mutation });

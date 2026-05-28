@@ -11,23 +11,27 @@ import { endPoint } from "./user.authrization";
 import { TokenTypeEnum } from "../../common/enums";
 import { UserModel } from "../../DB/model/user.model";
 import { upload } from "../../common/utils/upload/multer.cloud";
-import { uploadSingleToCloudinary } from "../../common/utils/upload/cloudinaryUpload.utils";
+import {
+  uploadMultipleToCloudinary,
+  uploadSingleToCloudinary,
+} from "../../common/utils/upload/cloudinaryUpload.utils";
 import { chatRouter } from "../chat";
 import { BadRequestException } from "../../common/exceptions";
 
 const router = Router();
-router.use("/:userId/chat", chatRouter)
+router.use("/:userId/chat", chatRouter);
 
-router.get("/",
+router.get(
+  "/",
   authentication(),
   authorization(endPoint.profile),
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, _next: NextFunction) => {
     const data = await userService.profile(req.user);
     return successResponse({ res, data });
   },
 );
 
-router.post("/logout", authentication(), async (req, res, next) => {
+router.post("/logout", authentication(), async (req, res, _next) => {
   const status = await userService.logout(
     req.body,
     req.user!,
@@ -36,9 +40,10 @@ router.post("/logout", authentication(), async (req, res, next) => {
   return successResponse({ res, status });
 });
 
-router.post("/rotate-token",
+router.post(
+  "/rotate-token",
   authentication(TokenTypeEnum.REFRESH),
-  async (req, res, next) => {
+  async (req, res, _next) => {
     const credentials = await userService.rotateToken(
       req.user!,
       req.decoded as { jti: string; iat: number; sub: string },
@@ -47,7 +52,8 @@ router.post("/rotate-token",
     return successResponse({ res, status: 201, data: { ...credentials } });
   },
 );
-router.patch("/profile-picture",
+router.patch(
+  "/profile-picture",
   authentication(),
   upload.any(),
   async (req, res, next) => {
@@ -61,21 +67,26 @@ router.patch("/profile-picture",
 
       const userId = req.user!._id;
       const folderPath = `users/${userId.toString()}/profile-picture`;
-      
+
       const secure_url = await uploadSingleToCloudinary(file, folderPath);
 
       await UserModel.updateOne({ _id: userId }, {
         profilePicture: secure_url,
       } as any);
 
-      return successResponse({ res, status: 201, data: { message: "Done Upload" } });
+      return successResponse({
+        res,
+        status: 201,
+        data: { message: "Done Upload" },
+      });
     } catch (error) {
       return next(error);
     }
-  }
+  },
 );
 
-router.patch("/cover-picture",
+router.patch(
+  "/cover-picture",
   authentication(),
   upload.any(),
   async (req, res, next) => {
@@ -95,11 +106,15 @@ router.patch("/cover-picture",
         profileCoverPicture: secureUrls,
       } as any);
 
-      return successResponse({ res, status: 201, data: { message: "Cover pictures updated successfully" } });
+      return successResponse({
+        res,
+        status: 201,
+        data: { message: "Cover pictures updated successfully" },
+      });
     } catch (error) {
       return next(error);
     }
-  }
+  },
 );
 
 router.delete("/profile-picture", authentication(), async (req, res, next) => {
@@ -110,7 +125,11 @@ router.delete("/profile-picture", authentication(), async (req, res, next) => {
       $unset: { profilePicture: 1 },
     } as any);
 
-    return successResponse({ res, status: 200, data: { message: "Profile picture soft-deleted successfully" } });
+    return successResponse({
+      res,
+      status: 200,
+      data: { message: "Profile picture soft-deleted successfully" },
+    });
   } catch (error) {
     return next(error);
   }
@@ -121,7 +140,9 @@ router.delete("/cover-picture", authentication(), async (req, res, next) => {
     const { url } = req.body;
 
     if (!url) {
-      throw new BadRequestException("Cover picture URL is required to delete it");
+      throw new BadRequestException(
+        "Cover picture URL is required to delete it",
+      );
     }
 
     const userId = req.user!._id;
@@ -129,13 +150,18 @@ router.delete("/cover-picture", authentication(), async (req, res, next) => {
       $pull: { profileCoverPicture: url },
     } as any);
 
-    return successResponse({ res, status: 200, data: { message: "Cover picture soft-deleted successfully" } });
+    return successResponse({
+      res,
+      status: 200,
+      data: { message: "Cover picture soft-deleted successfully" },
+    });
   } catch (error) {
     return next(error);
   }
 });
 
-router.delete("/",
+router.delete(
+  "/",
   authentication(),
   authorization(endPoint.profile),
   async (req: Request, res: Response, next: NextFunction) => {
@@ -143,8 +169,8 @@ router.delete("/",
       const data = await userService.deleteProfile(req.user!);
       return successResponse({ res, data });
     } catch (error) {
-      next(error);
+      return next(error);
     }
-  }
+  },
 );
 export default router;
