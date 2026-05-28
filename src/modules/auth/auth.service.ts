@@ -127,15 +127,13 @@ class AuthenticationService {
       ttl: 120,
     });
 
-    emailEmitter.emit("sendEmail", async () => {
-      await sendEmail({
-        to: email,
-        subject,
-        html: emailTemplate({ code, title }),
-      });
-
-      await this.redis.incr(this.redis.maxAttemptOtpKey({ email, subject }));
+    await sendEmail({
+      to: email,
+      subject,
+      html: emailTemplate({ code, title }),
     });
+
+    await this.redis.incr(this.redis.maxAttemptOtpKey({ email, subject }));
   }
 
   public Signup = async ({
@@ -166,10 +164,10 @@ class AuthenticationService {
       throw new BadRequestException("Fail");
     }
 
-    this.sendEmailOtp({
+    await this.sendEmailOtp({
       email,
       subject: EmailEnum.CONFIRM_EMAIL,
-      title: "Verfy Email",
+      title: "Verify Email",
     });
     return user.toJSON();
   };

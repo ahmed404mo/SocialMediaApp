@@ -21,8 +21,7 @@ import { BadRequestException } from "../../common/exceptions";
 const router = Router();
 router.use("/:userId/chat", chatRouter);
 
-router.get(
-  "/",
+router.get("/",
   authentication(),
   authorization(endPoint.profile),
   async (req: Request, res: Response, _next: NextFunction) => {
@@ -40,8 +39,7 @@ router.post("/logout", authentication(), async (req, res, _next) => {
   return successResponse({ res, status });
 });
 
-router.post(
-  "/rotate-token",
+router.post("/rotate-token",
   authentication(TokenTypeEnum.REFRESH),
   async (req, res, _next) => {
     const credentials = await userService.rotateToken(
