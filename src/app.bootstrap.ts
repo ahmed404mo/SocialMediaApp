@@ -52,7 +52,7 @@ const bootstrap = async () => {
   await connectDB();
   await redisService.connect();
 
-  app.use((req: express.Request, res: express.Response) => {
+  app.use((_req: express.Request, res: express.Response) => {
     res.status(404).json({ message: "invalid application routing" });
   });
   const httpServer: HttpServerType = app.listen(PORT, () => {

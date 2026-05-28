@@ -60,7 +60,7 @@ router.post(
         data,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 );
