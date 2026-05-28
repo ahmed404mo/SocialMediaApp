@@ -5,7 +5,7 @@ import { HydratedDocument } from "mongoose";
 import { IUser } from "../common/interfaces";
 
 export const authorization = (accessRoles: RoleEnum[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user || !accessRoles.includes(req.user.role)) {
       throw new forbiddenException("Not authorized account");
     }
@@ -13,7 +13,10 @@ export const authorization = (accessRoles: RoleEnum[]) => {
   };
 };
 
-export const GQLauthorization = async(accessRoles: RoleEnum[],user: HydratedDocument<IUser>):Promise<boolean> => {
+export const GQLauthorization = async (
+  accessRoles: RoleEnum[],
+  user: HydratedDocument<IUser>,
+): Promise<boolean> => {
   if (!accessRoles.includes(user.role)) {
     throw MapGraphQLError(new forbiddenException("not authorized account"));
   }

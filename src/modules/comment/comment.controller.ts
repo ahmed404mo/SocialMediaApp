@@ -14,7 +14,8 @@ import { IComment } from "../../common/interfaces";
 
 const router = Router({ mergeParams: true });
 
-router.post("/",
+router.post(
+  "/",
   authentication(),
   upload.array("attachments", 2),
   validation(validtors.createComment),
@@ -33,13 +34,14 @@ router.post("/",
         data,
       });
     } catch (error) {
-      next(error);
+      return next(error);
+      return next(error);
     }
   },
 );
 
-
-router.post("/:commentId/reply",
+router.post(
+  "/:commentId/reply",
   authentication(),
   upload.array("attachments", 2),
   validation(validtors.replyOnComment),

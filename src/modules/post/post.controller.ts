@@ -98,7 +98,7 @@ router.patch(
   async (
     req: Request,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<Response> => {
     const data = await postService.updatePost({
       postId: req.params as updatePostParamsDto,

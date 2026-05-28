@@ -3,11 +3,10 @@ import { UnauthorizedException } from "../common/exceptions";
 import { TokenService } from "../common/services";
 import { TokenTypeEnum } from "../common/enums";
 
-
 export const authentication = (
   tokenType: TokenTypeEnum = TokenTypeEnum.ACCESS,
 ) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     const tokenService = new TokenService();
 
     const [key, credential] = req.headers?.authorization?.split(" ") || [];
