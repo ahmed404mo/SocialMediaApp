@@ -2,7 +2,8 @@ import { HydratedDocument, model, models, Schema, Types } from "mongoose";
 import { IPost } from "../../common/interfaces";
 import { AvailabilityEnum } from "../../common/enums";
 
-const postSchema = new Schema<IPost>({
+const postSchema = new Schema<IPost>(
+  {
     folderId: { type: String, required: true },
     content: {
       type: String,
@@ -12,7 +13,6 @@ const postSchema = new Schema<IPost>({
     },
     attachments: { type: [String] },
 
-   
     availability: {
       type: Number,
       enum: AvailabilityEnum,
@@ -35,9 +35,18 @@ const postSchema = new Schema<IPost>({
   },
 );
 
-
-
 postSchema.pre(["findOne", "find", "countDocuments"], function () {
+  const query = this.getQuery();
+  if (query.paranoid === false) {
+    delete query.paranoid;
+    this.setQuery({ ...query });
+  } else {
+    delete query.paranoid;
+    this.setQuery({ ...query, deletedAt: { $exists: false } });
+  }
+});
+
+postSchema.pre(["updateOne", "findOneAndUpdate"], function () {
   const update = this.getUpdate() as HydratedDocument<IPost>;
   if (update?.deletedAt) {
     this.setUpdate({ ...update, $unset: { restoredAt: 1 } });
@@ -48,37 +57,33 @@ postSchema.pre(["findOne", "find", "countDocuments"], function () {
   }
   const query = this.getQuery();
   if (query.paranoid === false) {
+    delete query.paranoid;
     this.setQuery({ ...query });
   } else {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
-  }
-});
-
-postSchema.pre(["updateOne", "findOneAndUpdate"], function () {
-  const query = this.getQuery();
-  if (query.paranoid === false) {
-    this.setQuery({ ...query });
-  } else {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
+    delete query.paranoid;
+    if (!query.deletedAt) {
+      this.setQuery({ ...query, deletedAt: { $exists: false } });
+    }
   }
 });
 
 postSchema.pre(["deleteOne", "findOneAndDelete"], function () {
   const query = this.getQuery();
   if (query.force === true) {
+    delete query.force;
     this.setQuery({ ...query });
   } else {
+    delete query.force;
     this.setQuery({ deletedAt: { $exists: true }, ...query });
   }
 });
 
 postSchema.virtual("comments", {
   localField: "_id",
-  foreignField:"postId",
-  ref:"Comment",
-  justOne:true
-})
-
+  foreignField: "postId",
+  ref: "Comment",
+  justOne: true,
+});
 
 export const PostModel = models.Post || model<IPost>("Post", postSchema);
-PostModel.syncIndexes()
+PostModel.syncIndexes();

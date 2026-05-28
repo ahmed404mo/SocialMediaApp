@@ -6,7 +6,6 @@ import {
   paginationValidationSchema,
 } from "../../../common/validation";
 import { reactOnPostGQL } from "../post.validation";
-import { IPaginate } from "../../../common/interfaces";
 import { ReactOnPostArgsDto } from "../post.dto";
 
 export class PostResolver {
@@ -15,7 +14,7 @@ export class PostResolver {
     this.postService = postService;
   }
   postList = async (
-    parent: unknown,
+    _parent: unknown,
     args: PagiateDto,
     { user }: IAuthUser,
   ): Promise<any> => {
@@ -25,7 +24,7 @@ export class PostResolver {
   };
 
   reactOnPost = async (
-    parent: unknown,
+    _parent: unknown,
     { postId, react }: ReactOnPostArgsDto,
     { user }: IAuthUser,
   ): Promise<any> => {

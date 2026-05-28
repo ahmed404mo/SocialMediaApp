@@ -34,9 +34,9 @@ const bootstrap = async () => {
   app.get(
     "/",
     (
-      req: express.Request,
+      _req: express.Request,
       res: express.Response,
-      next: express.NextFunction,
+      _next: express.NextFunction,
     ) => {
       res.status(200).json({ message: "landing page" });
     },

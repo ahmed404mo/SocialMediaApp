@@ -24,7 +24,6 @@ import { IPaginate, IPost } from "../../common/interfaces";
 import cloudinary from "../../DB/cloudinary/cloudinary.db";
 import { getAvalibality } from "../../common/utils/post";
 import { PagiateDto } from "../../common/validation";
-import { toObjectId } from "../../common/utils/objectId";
 import { realTimeGateway, RealtimeGateway } from "../realtime";
 
 export class PostService {

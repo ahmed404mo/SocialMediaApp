@@ -57,7 +57,7 @@ userSchema
     return `${this.firstName} ${this.lastName}`;
   });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   // console.log("Pre one", this);
   console.log(this.modifiedPaths(), this.isModified());
   if (this.isModified("password")) {
@@ -72,8 +72,18 @@ userSchema.pre("save", async function (next) {
   // next()
 });
 userSchema.pre(["findOne", "find"], function () {
+  const query = this.getQuery();
+  if (query.paranoid === false) {
+    delete query.paranoid;
+    this.setQuery({ ...query });
+  } else {
+    delete query.paranoid;
+    this.setQuery({ ...query, deletedAt: { $exists: false } });
+  }
+});
+
+userSchema.pre(["updateOne", "findOneAndUpdate"], function () {
   const update = this.getUpdate() as HydratedDocument<IUser>;
-  // console.log(update);
   if (update?.deletedAt) {
     this.setUpdate({ ...update, $unset: { restoredAt: 1 } });
   }
@@ -83,25 +93,22 @@ userSchema.pre(["findOne", "find"], function () {
   }
   const query = this.getQuery();
   if (query.paranoid === false) {
+    delete query.paranoid;
     this.setQuery({ ...query });
   } else {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
-  }
-});
-
-userSchema.pre(["updateOne", "findOneAndUpdate"], function () {
-  const query = this.getQuery();
-  if (query.paranoid === false) {
-    this.setQuery({ ...query });
-  } else {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
+    delete query.paranoid;
+    if (!query.deletedAt) {
+      this.setQuery({ ...query, deletedAt: { $exists: false } });
+    }
   }
 });
 userSchema.pre(["deleteOne", "findOneAndDelete"], function () {
   const query = this.getQuery();
   if (query.force === true) {
+    delete query.force;
     this.setQuery({ ...query });
   } else {
+    delete query.force;
     this.setQuery({ deletedAt: { $exists: true }, ...query });
   }
 });

@@ -10,9 +10,13 @@ export class UserResolver {
   constructor() {
     this.userService = userService;
   }
-  profile = async (parent: unknown, args:{search?:string} ,{user}:IAuthUser):Promise<{message:string, data:IUser}> => {
-    await GQLValidation<{search?:string}>(profileGQL, args)
-    await GQLauthorization(endPoint.profile, user)
+  profile = async (
+    _parent: unknown,
+    args: { search?: string },
+    { user }: IAuthUser,
+  ): Promise<{ message: string; data: { user: IUser; groups: any[] } }> => {
+    await GQLValidation<{ search?: string }>(profileGQL, args);
+    await GQLauthorization(endPoint.profile, user);
     const data = await this.userService.profile(user);
 
     return { message: "Hello", data };

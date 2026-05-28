@@ -39,6 +39,17 @@ commentSchema.virtual("reply",{
 
 
 commentSchema.pre(["findOne", "find", "countDocuments"], function () {
+  const query = this.getQuery();
+  if (query.paranoid === false) {
+    delete query.paranoid;
+    this.setQuery({ ...query });
+  } else {
+    delete query.paranoid;
+    this.setQuery({ ...query, deletedAt: { $exists: false } });
+  }
+});
+
+commentSchema.pre(["updateOne", "findOneAndUpdate"], function () {
   const update = this.getUpdate() as HydratedDocument<IComment>;
   if (update?.deletedAt) {
     this.setUpdate({ ...update, $unset: { restoredAt: 1 } });
@@ -49,26 +60,23 @@ commentSchema.pre(["findOne", "find", "countDocuments"], function () {
   }
   const query = this.getQuery();
   if (query.paranoid === false) {
+    delete query.paranoid;
     this.setQuery({ ...query });
   } else {
+    delete query.paranoid;
+    if (!query.deletedAt) {
     this.setQuery({ ...query, deletedAt: { $exists: false } });
-  }
-});
-
-commentSchema.pre(["updateOne", "findOneAndUpdate"], function () {
-  const query = this.getQuery();
-  if (query.paranoid === false) {
-    this.setQuery({ ...query });
-  } else {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
+    }
   }
 });
 
 commentSchema.pre(["deleteOne", "findOneAndDelete"], function () {
   const query = this.getQuery();
   if (query.force === true) {
+    delete query.force;
     this.setQuery({ ...query });
   } else {
+    delete query.force;
     this.setQuery({ deletedAt: { $exists: true }, ...query });
   }
 });

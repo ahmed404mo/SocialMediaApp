@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { BadRequestException } from "../../../common/exceptions";
 import { IAuthSoket } from "../../../common/types/express.types";
 import { soketValidation } from "../../../middleware";
@@ -60,8 +60,8 @@ socket.to(roomId).emit("newMessage", {content, groupId})
     })
   }
 
-    join_room = (socket:IAuthSoket, io:Server)=>{
-    return socket.on("sendGroupMessage", async({roomId}:{ roomId:string})=>{
+    join_room = (socket:IAuthSoket, _io:Server)=>{
+    return socket.on("joinRoom", async({roomId}:{ roomId:string})=>{
       try {
 socket.join(roomId)
       } catch (error) {

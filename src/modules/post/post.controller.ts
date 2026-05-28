@@ -4,7 +4,7 @@ import {
   type Response,
   Router,
 } from "express";
-import { authentication, GQLValidation, validation } from "../../middleware";
+import { authentication, validation } from "../../middleware";
 import { successResponse } from "../../common/response";
 import { upload } from "../../common/utils/upload/multer.cloud";
 import * as validtors from "./post.validation";
@@ -22,12 +22,12 @@ import {
 
 const router = Router();
 
-router.get("/",
+router.get(
+  "/",
   validation(paginationValidationSchema),
   authentication(),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      
       const data = await postService.postList(
         { user: req.user! },
         req.query as PagiateDto,
@@ -47,7 +47,8 @@ router.get("/",
   },
 );
 
-router.post("/",
+router.post(
+  "/",
   authentication(),
   upload.array("attachments", 2),
   validation(validtors.createPost),
@@ -72,7 +73,8 @@ router.post("/",
   },
 );
 
-router.patch("/:postId/react",
+router.patch(
+  "/:postId/react",
   authentication(),
   validation(validtors.reactPost),
   async (
@@ -88,7 +90,8 @@ router.patch("/:postId/react",
     return successResponse({ res, status: 200, data });
   },
 );
-router.patch("/:postId",
+router.patch(
+  "/:postId",
   authentication(),
   upload.array("attachments", 2),
   validation(validtors.updatePost),
