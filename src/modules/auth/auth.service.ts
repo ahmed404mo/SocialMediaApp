@@ -12,7 +12,6 @@ import {
 import { UserRepository } from "../../DB/repository";
 import {
   compareHash,
-  generateEncryption,
   generateHash,
 } from "../../common/utils/security";
 import { SecurityServices } from "../../common/services/security.service";
@@ -30,18 +29,14 @@ import { createRandomOtp } from "../../common/utils/otp";
 import { ILoginResponse } from "./auth.entity";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { CLIENT_IDS } from "../../config/config";
-import { IdTokenOptions } from "./../../../node_modules/google-auth-library/build/src/auth/idtokenclient.d";
-import { Types } from "mongoose";
 
 class AuthenticationService {
   private userRepository: UserRepository;
-  private readonly securityServices: SecurityServices;
   private readonly redis: RedisService;
   private readonly tokenService: TokenService;
   private readonly notification: NotificationService;
   constructor() {
     this.userRepository = new UserRepository();
-    this.securityServices = new SecurityServices();
     this.redis = redisService;
     this.tokenService = new TokenService();
     this.notification = notificationService;

@@ -1,7 +1,8 @@
 import { HydratedDocument, model, models, Schema, Types } from "mongoose";
 import { IComment } from "../../common/interfaces";
 
-const commentSchema = new Schema<IComment>({
+const commentSchema = new Schema<IComment>(
+  {
     content: {
       type: String,
       required: function (this: any) {
@@ -12,7 +13,7 @@ const commentSchema = new Schema<IComment>({
 
     likes: [{ type: Types.ObjectId, ref: "User" }],
     tags: [{ type: Types.ObjectId, ref: "User" }],
-    postId: [{ type: Types.ObjectId, ref: "Post" , required: true}],
+    postId: [{ type: Types.ObjectId, ref: "Post", required: true }],
     commentId: [{ type: Types.ObjectId, ref: "comment" }],
 
     updatedBy: { type: Types.ObjectId, ref: "User" },
@@ -30,13 +31,12 @@ const commentSchema = new Schema<IComment>({
   },
 );
 
-commentSchema.virtual("reply",{
-    localField: "_id",
-  foreignField:"commentId",
-  ref:"Comment",
-  justOne:true
-})
-
+commentSchema.virtual("reply", {
+  localField: "_id",
+  foreignField: "commentId",
+  ref: "Comment",
+  justOne: true,
+});
 
 commentSchema.pre(["findOne", "find", "countDocuments"], function () {
   const query = this.getQuery();
@@ -65,7 +65,7 @@ commentSchema.pre(["updateOne", "findOneAndUpdate"], function () {
   } else {
     delete query.paranoid;
     if (!query.deletedAt) {
-    this.setQuery({ ...query, deletedAt: { $exists: false } });
+      this.setQuery({ ...query, deletedAt: { $exists: false } });
     }
   }
 });
@@ -81,5 +81,6 @@ commentSchema.pre(["deleteOne", "findOneAndDelete"], function () {
   }
 });
 
-export const CommentModel = models.Comment || model<IComment>("Comment", commentSchema);
-CommentModel.syncIndexes()
+export const CommentModel =
+  models.Comment || model<IComment>("Comment", commentSchema);
+CommentModel.syncIndexes();
